@@ -1,0 +1,1345 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07061a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="무성 마피아">
+<title>무성 마피아: 외계인을 찾아라</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👽</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07061a; --cyan:#3ef2ff; --pink:#ff4fd8; --lime:#a8ff3e; --yellow:#ffe14a;
+  --text:#eef0ff; --muted:#a3a8d6; --card:rgba(22,19,58,.72); --line:rgba(255,255,255,.12);
+  --display:'Black Han Sans','Noto Sans KR',system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{
+  background:radial-gradient(120% 80% at 50% -10%,#2a1a6e 0%,#120d38 40%,var(--bg) 75%) fixed,var(--bg);
+  color:var(--text); font-family:'Noto Sans KR',system-ui,-apple-system,sans-serif;
+  -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent;
+  -webkit-user-select:none; user-select:none; -webkit-touch-callout:none;
+  overscroll-behavior:none; word-break:keep-all; touch-action:manipulation;
+}
+button{font-family:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+h1,h2,h3,p{margin:0}
+
+/* ---------- 우주 배경 ---------- */
+#stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#stars i{position:absolute;background:#fff;border-radius:50%;opacity:.2;animation:twinkle 3s ease-in-out infinite}
+#stars::before,#stars::after{content:'';position:absolute;width:70vmax;height:70vmax;border-radius:50%;filter:blur(60px);opacity:.35;animation:drift 22s ease-in-out infinite alternate}
+#stars::before{background:radial-gradient(circle,rgba(255,79,216,.5),transparent 60%);left:-30vmax;top:30vh}
+#stars::after{background:radial-gradient(circle,rgba(62,242,255,.35),transparent 60%);right:-35vmax;top:-20vmax;animation-duration:28s}
+@keyframes twinkle{0%,100%{opacity:.15;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+@keyframes drift{from{transform:translate(0,0)}to{transform:translate(8vmax,6vmax)}}
+
+#root{position:relative;z-index:1}
+.app{max-width:480px;margin:0 auto;min-height:100vh;min-height:100dvh;padding:calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 20px);display:flex;flex-direction:column}
+/* backwards: 애니메이션이 끝나면 transform/filter가 남지 않아 fixed 오버레이가 화면 기준으로 뜸 */
+.screen{flex:1;display:flex;flex-direction:column;gap:14px;animation:screenIn .5s cubic-bezier(.2,.8,.2,1) backwards}
+@keyframes screenIn{from{opacity:0;transform:translateY(22px) scale(.97);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes pop{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:none}}
+.spacer{flex:1}
+.center{text-align:center}
+.muted{color:var(--muted)}
+.neon-cyan{color:var(--cyan);text-shadow:0 0 4px rgba(62,242,255,.9),0 0 16px rgba(62,242,255,.6),0 0 34px rgba(62,242,255,.35)}
+.neon-pink{color:var(--pink);text-shadow:0 0 4px rgba(255,79,216,.9),0 0 16px rgba(255,79,216,.6),0 0 34px rgba(255,79,216,.35)}
+.neon-lime{color:var(--lime);text-shadow:0 0 4px rgba(168,255,62,.9),0 0 16px rgba(168,255,62,.55),0 0 34px rgba(168,255,62,.3)}
+.neon-yellow{color:var(--yellow);text-shadow:0 0 4px rgba(255,225,74,.9),0 0 16px rgba(255,225,74,.55),0 0 34px rgba(255,225,74,.3)}
+
+/* ---------- 공통 UI ---------- */
+.topbar{display:flex;align-items:center;gap:8px;min-height:48px}
+.topbar h2{flex:1;text-align:center;font-size:17px;font-weight:700}
+.icon-btn{width:44px;height:44px;flex:none;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.05);font-size:22px;display:grid;place-items:center;cursor:pointer;padding:0}
+.icon-btn.ghost{visibility:hidden}
+
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:58px;padding:12px 16px;border-radius:18px;border:2px solid var(--line);background:rgba(255,255,255,.06);font-size:18px;font-weight:900;cursor:pointer;transition:transform .12s ease,opacity .2s}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.35;pointer-events:none}
+.btn-cyan{border-color:var(--cyan);background:linear-gradient(180deg,rgba(62,242,255,.28),rgba(62,242,255,.08));box-shadow:0 0 18px rgba(62,242,255,.45),inset 0 0 14px rgba(62,242,255,.2);color:#effeff}
+.btn-pink{border-color:var(--pink);background:linear-gradient(180deg,rgba(255,79,216,.3),rgba(255,79,216,.08));box-shadow:0 0 18px rgba(255,79,216,.45),inset 0 0 14px rgba(255,79,216,.2);color:#fff0fc}
+.btn-lime{border-color:var(--lime);background:linear-gradient(180deg,rgba(168,255,62,.26),rgba(168,255,62,.07));box-shadow:0 0 18px rgba(168,255,62,.4),inset 0 0 14px rgba(168,255,62,.18);color:#f6ffe9}
+.btn-ghost{min-height:52px;font-size:16px;font-weight:700}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.label{font-size:14px;font-weight:700;color:var(--muted);margin-bottom:10px}
+.mt{margin-top:16px}
+.divider{height:1px;background:var(--line);margin:14px 0}
+
+.stepper{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.stepper .s-label{font-weight:700;font-size:16px}
+.stepper .s-ctrl{display:flex;align-items:center;gap:8px}
+.stepper button{width:48px;height:48px;border-radius:50%;border:2px solid var(--cyan);background:rgba(62,242,255,.1);font-size:24px;font-weight:900;color:var(--cyan);cursor:pointer;padding:0}
+.stepper button:disabled{opacity:.25;border-color:var(--line);color:var(--muted)}
+.stepper .val{min-width:62px;text-align:center;font-size:28px;font-weight:900}
+.stepper .val small{font-size:14px;color:var(--muted);margin-left:2px}
+
+.chips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chip{min-height:54px;border-radius:14px;border:1.5px solid var(--line);background:rgba(255,255,255,.04);font-size:15px;font-weight:700;padding:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;transition:all .15s}
+.chip small{font-size:11px;color:var(--muted);font-weight:400}
+.chip.on{border-color:var(--cyan);background:rgba(62,242,255,.14);box-shadow:0 0 14px rgba(62,242,255,.35);color:#fff}
+
+.seg{display:flex;gap:6px;background:rgba(0,0,0,.25);border-radius:14px;padding:4px}
+.seg button{flex:1;min-height:44px;border-radius:11px;border:0;background:transparent;font-size:16px;font-weight:700;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--pink);color:#1a0420;box-shadow:0 0 14px rgba(255,79,216,.6)}
+
+.toggle{display:flex;align-items:center;gap:12px;width:100%;background:none;border:0;text-align:left;padding:0;cursor:pointer}
+.toggle .t-text{flex:1}
+.toggle .t-text b{display:block;font-size:15px;margin-bottom:2px}
+.toggle .t-text small{color:var(--muted);font-size:12.5px;line-height:1.4}
+.switch{width:54px;height:32px;border-radius:16px;background:rgba(255,255,255,.15);position:relative;flex:none;transition:background .2s}
+.switch::after{content:'';position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:transform .2s}
+.toggle.on .switch{background:var(--lime);box-shadow:0 0 12px rgba(168,255,62,.6)}
+.toggle.on .switch::after{transform:translateX(22px)}
+
+/* ---------- 홈 ---------- */
+.home-top{display:flex;align-items:center}
+.qr-box{align-self:center;width:min(78vw,340px);aspect-ratio:1;background:#fff;border-radius:22px;padding:14px;display:grid;place-items:center;text-align:center;box-shadow:0 0 30px rgba(62,242,255,.5),0 0 0 3px var(--cyan)}
+.qr-box .muted{color:#555}
+.qr,.qr svg{width:100%;height:100%;display:block}
+.url{font-size:14px;font-weight:700;word-break:break-all;color:var(--cyan);-webkit-user-select:text;user-select:text}
+.hero{text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.badge{display:inline-block;padding:6px 12px;border-radius:999px;border:1px solid rgba(255,79,216,.6);color:var(--pink);font-size:12px;font-weight:900;letter-spacing:2px;background:rgba(255,79,216,.08)}
+.hero h1{font-family:var(--display);font-weight:400;line-height:1.05}
+.hero h1 .t1{display:block;font-size:54px}
+.hero h1 .t2{display:block;font-size:28px;margin-top:6px}
+.hero p{font-size:14.5px;line-height:1.55;max-width:320px}
+.mode-card{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:18px;border-radius:22px;border:2px solid;cursor:pointer;transition:transform .12s}
+.mode-card:active{transform:scale(.97)}
+.mode-card .m-emoji{font-size:34px;width:56px;height:56px;display:grid;place-items:center;border-radius:16px;background:rgba(255,255,255,.08);flex:none}
+.mode-card b{display:block;font-size:19px;margin-bottom:4px}
+.mode-card small{display:block;color:var(--muted);font-size:13px;line-height:1.4}
+.mode-card.cyan{border-color:var(--cyan);background:linear-gradient(135deg,rgba(62,242,255,.18),rgba(62,242,255,.03));box-shadow:0 0 22px rgba(62,242,255,.3)}
+.mode-card.pink{border-color:var(--pink);background:linear-gradient(135deg,rgba(255,79,216,.18),rgba(255,79,216,.03));box-shadow:0 0 22px rgba(255,79,216,.3)}
+.rules summary{font-weight:900;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;min-height:28px}
+.rules summary::-webkit-details-marker{display:none}
+.rules summary::after{content:'＋';color:var(--cyan)}
+.rules[open] summary::after{content:'－'}
+.rules ol{margin:12px 0 0;padding-left:20px;line-height:1.65;font-size:14.5px;color:#d8dbff}
+.rules li{margin-bottom:6px}
+.warn{color:var(--yellow);font-weight:700;font-size:14px;line-height:1.5}
+
+/* ---------- UFO ---------- */
+.ufo-wrap{display:flex;justify-content:center;animation:float 3.2s ease-in-out infinite}
+.ufo{width:180px;height:auto;filter:drop-shadow(0 0 18px rgba(62,242,255,.45))}
+.ufo-wrap.sm .ufo{width:120px}
+.ufo .beam{animation:beam 2.4s ease-in-out infinite;transform-origin:100px 78px}
+.ufo .light{animation:blink 1.2s steps(2) infinite}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-12px) rotate(2deg)}}
+@keyframes beam{0%,100%{opacity:.35;transform:scaleX(.85)}50%{opacity:1;transform:scaleX(1)}}
+@keyframes blink{0%{fill:#ffe14a}100%{fill:#ff4fd8}}
+
+/* ---------- 역할 확인 ---------- */
+.progress{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.progress i{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.15);transition:all .3s}
+.progress i.done{background:var(--lime);box-shadow:0 0 8px var(--lime)}
+.progress i.cur{background:var(--cyan);box-shadow:0 0 10px var(--cyan);transform:scale(1.35)}
+.pass{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.pass-num{font-family:var(--display);font-size:120px;line-height:1}
+.pass-hand{font-size:54px;animation:nudge 1.4s ease-in-out infinite}
+@keyframes nudge{0%,100%{transform:translateX(-10px)}50%{transform:translateX(10px)}}
+.hold{position:relative;flex:1;min-height:380px;border-radius:26px;border:2px dashed rgba(62,242,255,.5);background:rgba(10,8,34,.75);display:flex;align-items:center;justify-content:center;padding:22px 18px;touch-action:none;cursor:pointer;overflow:hidden;transition:border-color .2s,box-shadow .2s}
+.hold.on{border-style:solid}
+.hold.on.citizen{border-color:var(--lime);box-shadow:0 0 30px rgba(168,255,62,.35),inset 0 0 30px rgba(168,255,62,.12)}
+.hold.on.alien{border-color:var(--pink);box-shadow:0 0 30px rgba(255,79,216,.45),inset 0 0 30px rgba(255,79,216,.15)}
+.hold-cover{text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center;pointer-events:none}
+.hold-cover .finger{font-size:64px;animation:press 1.6s ease-in-out infinite}
+@keyframes press{0%,100%{transform:translateY(0)}50%{transform:translateY(8px) scale(.94)}}
+.hold-cover b{font-size:20px}
+.hold-cover small{color:var(--muted);font-size:13.5px;line-height:1.5}
+.role{width:100%;display:flex;flex-direction:column;gap:12px;text-align:center;animation:pop .25s cubic-bezier(.2,1.4,.4,1) both;pointer-events:none}
+.role-tag{align-self:center;padding:8px 16px;border-radius:999px;font-weight:900;font-size:18px}
+.citizen .role-tag{background:rgba(168,255,62,.15);color:var(--lime);border:1.5px solid var(--lime)}
+.alien .role-tag{background:rgba(255,79,216,.15);color:var(--pink);border:1.5px solid var(--pink)}
+.role .kw-label{font-size:13px;color:var(--muted);font-weight:700;letter-spacing:1px}
+.role .kw{font-size:25px;font-weight:900;line-height:1.4}
+.role .cat{font-size:13px;color:var(--muted)}
+.role .tip{font-size:14px;line-height:1.5;background:rgba(255,255,255,.06);border-radius:14px;padding:10px 12px;color:#e6e8ff}
+.role .alien-face{font-size:84px;line-height:1;animation:wobble 1.8s ease-in-out infinite}
+@keyframes wobble{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+.role .mission{font-size:17px;font-weight:700;line-height:1.55}
+.role .extra{font-size:14px;color:var(--yellow);font-weight:700}
+.my-turn{font-size:13px;color:var(--cyan);font-weight:700}
+.warp{position:fixed;inset:0;z-index:60;background:rgba(7,6,26,.97);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;animation:fadeIn .15s both}
+.warp .ufo-fly{animation:fly .95s cubic-bezier(.6,0,.4,1) both}
+.warp .ufo{width:140px}
+@keyframes fly{0%{transform:translateX(-120vw) rotate(-12deg)}45%,55%{transform:translateX(0) rotate(0)}100%{transform:translateX(120vw) rotate(12deg)}}
+
+/* ---------- 릴레이 / 타이머 ---------- */
+.relay-stage{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center}
+.relay-label{font-size:16px;font-weight:700;color:var(--muted)}
+.relay-player{font-family:var(--display);font-size:76px;line-height:1;animation:pop .35s cubic-bezier(.2,1.4,.4,1) both}
+.relay-player.sm{font-size:40px}
+.ring{position:relative;width:min(62vw,240px);aspect-ratio:1}
+.ring svg{width:100%;height:100%;display:block}
+.ring-bg{fill:none;stroke:rgba(255,255,255,.08);stroke-width:12}
+.ring-fg{fill:none;stroke-width:12;stroke-linecap:round}
+.ring-num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-size:84px;text-shadow:0 0 18px currentColor}
+.ring.urgent{animation:throb .5s ease-in-out infinite alternate}
+@keyframes throb{to{transform:scale(1.06)}}
+.order-strip{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center}
+.order-chip{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font-weight:900;border:2px solid var(--line);background:rgba(255,255,255,.05);transition:all .25s}
+.order-chip.current{border-color:var(--cyan);background:rgba(62,242,255,.25);box-shadow:0 0 16px var(--cyan);transform:scale(1.15)}
+.order-chip.done{opacity:.35}
+.arrow{color:var(--muted);font-weight:900}
+.flash{position:fixed;inset:0;pointer-events:none;z-index:40;background:radial-gradient(circle at 50% 45%,rgba(62,242,255,.55),rgba(255,79,216,.25) 45%,transparent 75%);animation:flashOut .6s ease-out both}
+@keyframes flashOut{from{opacity:1}to{opacity:0}}
+.done-box{flex:1;display:flex;flex-direction:column;gap:10px;align-items:center;justify-content:center;text-align:center;animation:pop .4s both}
+.big-emoji{font-size:64px;line-height:1.1}
+.done-box h3{font-size:26px;font-weight:900}
+.ready-list p{line-height:1.6;font-size:15px}
+.ready-list p+p{margin-top:6px}
+
+/* ---------- 투표 ---------- */
+.vote-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.vote-btn{aspect-ratio:1.1;border-radius:20px;border:2px solid var(--line);background:rgba(255,255,255,.05);font-family:var(--display);font-size:36px;cursor:pointer;transition:all .15s;padding:0}
+.vote-btn small{display:block;font-family:'Noto Sans KR',sans-serif;font-size:12px;color:var(--muted)}
+.vote-btn.sel{border-color:var(--pink);background:rgba(255,79,216,.22);box-shadow:0 0 22px rgba(255,79,216,.6);transform:scale(1.05)}
+.count-overlay{position:fixed;inset:0;z-index:70;display:grid;place-items:center;background:rgba(7,6,26,.88);pointer-events:none}
+.count-overlay span{font-family:var(--display);font-size:150px;color:var(--yellow);text-shadow:0 0 30px rgba(255,225,74,.8);animation:zoom .7s ease-out both}
+.count-overlay span.go{font-size:64px;color:var(--pink);text-shadow:0 0 30px rgba(255,79,216,.8)}
+@keyframes zoom{from{transform:scale(2.2);opacity:0}35%{opacity:1}to{transform:scale(1);opacity:1}}
+.vote-intro p{line-height:1.6}
+
+/* ---------- 결과 ---------- */
+.drum{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center}
+.drum .who{font-family:var(--display);font-size:72px;animation:shake .18s linear infinite}
+@keyframes shake{0%{transform:translate(0,0)}25%{transform:translate(-3px,2px)}50%{transform:translate(3px,-2px)}75%{transform:translate(-2px,-3px)}100%{transform:translate(0,0)}}
+.dots::after{content:'';animation:dots 1.2s steps(4) infinite}
+@keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+.verdict{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;animation:pop .4s cubic-bezier(.2,1.4,.4,1) both}
+.verdict .v-emoji{font-size:96px;line-height:1}
+.verdict h2{font-family:var(--display);font-weight:400;font-size:38px;line-height:1.15}
+.verdict p{font-size:16px;line-height:1.55}
+.modal-bg{position:fixed;inset:0;z-index:80;background:rgba(4,3,16,.82);display:flex;align-items:flex-end;justify-content:center;padding:16px;padding-bottom:calc(env(safe-area-inset-bottom) + 16px);animation:fadeIn .2s both}
+.modal{width:100%;max-width:448px;background:linear-gradient(180deg,#21184f,#120d33);border:2px solid var(--pink);border-radius:26px;padding:22px 18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 0 40px rgba(255,79,216,.45);animation:slideUp .35s cubic-bezier(.2,.9,.3,1.1) both;text-align:center}
+@keyframes slideUp{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
+.modal h3{font-family:var(--display);font-weight:400;font-size:28px}
+.modal p{line-height:1.6}
+.answer{font-size:22px;font-weight:900;line-height:1.4;padding:14px;border-radius:16px;background:rgba(168,255,62,.1);border:1.5px solid var(--lime);animation:pop .3s both}
+.winner{text-align:center;padding:20px 16px;border-radius:24px;border:2px solid;display:flex;flex-direction:column;gap:6px;animation:pop .45s cubic-bezier(.2,1.4,.4,1) both}
+.winner.citizens{border-color:var(--lime);background:rgba(168,255,62,.1);box-shadow:0 0 30px rgba(168,255,62,.3)}
+.winner.aliens{border-color:var(--pink);background:rgba(255,79,216,.1);box-shadow:0 0 30px rgba(255,79,216,.35)}
+.winner .w-emoji{font-size:72px;line-height:1.1}
+.winner h2{font-family:var(--display);font-weight:400;font-size:40px}
+.winner p{color:#dfe2ff;line-height:1.5}
+.kw-box{font-size:19px;font-weight:900;line-height:1.45;margin-top:4px}
+.roster{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.roster div{border-radius:14px;padding:8px 0;text-align:center;background:rgba(255,255,255,.05);border:1.5px solid var(--line);font-weight:900;font-size:14px}
+.roster div.al{border-color:var(--pink);background:rgba(255,79,216,.15)}
+.roster div.out{outline:2px dashed var(--yellow);outline-offset:2px}
+.roster div span{display:block;font-size:24px}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:30;overflow:hidden}
+.confetti span{position:absolute;top:-40px;font-size:22px;animation-name:fall;animation-timing-function:linear;animation-fill-mode:both}
+@keyframes fall{to{transform:translateY(115vh) rotate(540deg)}}
+
+/* ---------- 룰렛 / 타이머 도구 ---------- */
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:rgba(0,0,0,.25);padding:4px;border-radius:16px}
+.tabs button{min-height:48px;border:0;border-radius:12px;background:transparent;font-weight:700;font-size:14px;color:var(--muted);cursor:pointer;padding:0 4px}
+.tabs button.on{background:rgba(62,242,255,.18);color:#fff;box-shadow:inset 0 0 0 1.5px var(--cyan),0 0 14px rgba(62,242,255,.3)}
+.tab-body{display:flex;flex-direction:column;gap:14px;flex:1;animation:screenIn .35s backwards}
+.slot{min-height:200px;border-radius:24px;border:2px solid var(--pink);background:rgba(10,8,34,.75);box-shadow:0 0 26px rgba(255,79,216,.35),inset 0 0 26px rgba(255,79,216,.12);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px;text-align:center}
+.slot-text{font-size:23px;font-weight:900;line-height:1.4}
+.slot.spinning .slot-text{filter:blur(1.2px);opacity:.75}
+.slot-cat{font-size:13px;color:var(--muted)}
+.slot-empty{font-size:15px;color:var(--muted);line-height:1.8}
+.slot-empty b{font-size:48px;display:block}
+
+.fatal{margin:40vh 20px 0;text-align:center;line-height:1.6;font-size:16px}
+</style>
+</head>
+<body>
+<div id="stars" aria-hidden="true"></div>
+<div id="root"></div>
+<noscript><p class="fatal">이 게임은 자바스크립트가 필요해요.</p></noscript>
+
+<script type="module">
+/* =====================================================================
+   🎬 키워드 데이터베이스 — 이 목록만 고치면 장면이 바뀝니다.
+   ===================================================================== */
+const CATEGORIES = [
+  { id: 'campus', name: '대학생 일상', emoji: '🎓', items: [
+    '과제 마감 5분 전, 노트북 배터리가 1% 남았을 때',
+    '도서관에서 몰래 컵라면 먹다가 사서 선생님과 눈 마주쳤을 때',
+    '발표 도중 PPT가 갑자기 꺼졌을 때',
+    '수강신청 3초 전, 마우스 위에 손가락 올리고 대기할 때',
+    '수강신청 버튼 눌렀는데 \'정원 초과\' 뜰 때',
+    '수업 중 졸다가 교수님이 내 이름 불러서 번쩍 깼을 때',
+    '조별과제 단톡방에 아무도 답장 안 할 때',
+    '8시 59분, 1교시 강의실까지 전력질주할 때',
+    '학식 줄 한참 섰는데 내 앞에서 메뉴 품절될 때',
+    '시험지 받았는데 공부 안 한 범위에서만 문제 나왔을 때',
+    '닫히는 엘리베이터 문 사이로 겨우 몸 끼워 탔을 때',
+    '비 오는 날 우산 없이 건물 사이를 뛰어갈 때',
+    '화상 수업 중 마이크 켜진 줄 모르고 혼잣말했을 때',
+    'MT에서 수건돌리기 술래가 됐을 때',
+    '자취방 냉장고 열었는데 텅 비어 있을 때',
+    '월세 날 통장 잔고 확인하고 멍해질 때',
+    '카페에서 노트북 충전하려는데 콘센트가 전부 차 있을 때',
+    '기숙사 통금 1분 전 정문으로 뛰어들어갈 때',
+    '성적 확인 버튼 누르기 직전 눈 가리고 기도할 때',
+    '축제 공연에서 좋아하는 가수 나와서 방방 뛸 때',
+    '조용한 열람실에서 과자 봉지를 소리 안 나게 뜯을 때',
+    '팀플 발표 전날 밤새다가 창밖으로 해 뜨는 걸 볼 때',
+  ]},
+  { id: 'school', name: '초등 교실', emoji: '🏫', items: [
+    '수업 중 책상 밑에서 딴짓하다 선생님과 눈 딱 마주쳤을 때',
+    '선생님이 질문하자 눈 마주치기 싫어서 고개 숙이고 필통 뒤적거릴 때',
+    '받아쓰기 100점 맞고 짝꿍한테 은근슬쩍 시험지 자랑할 때',
+    '쉬는 시간 종 쳤는데 화장실 변기 물이 안 내려갈 때',
+    '칠판 지우개 털러 나갔다가 바람 불어서 분필 가루 뒤집어썼을 때',
+    '바닥에 떨어진 지우개 줍다가 책상 모서리에 머리 쿵 박았을 때',
+    '쉬는 시간에 공기놀이 꺾기(5단계) 극적으로 성공했을 때',
+    '바둑알 튕기기 알까기 승부에서 마지막 알 조준할 때',
+    '교과서로 판치기 하다가 동전 전부 뒤집어서 쓸어 담을 때',
+    '빗자루 손바닥 위에 올려놓고 아슬아슬 중심잡기 내기할 때',
+    '복도에서 슬라이딩하다가 교감 선생님 발앞에서 급정거했을 때',
+    '사물함 맨 윗칸에 손이 안 닿아 까치발 들고 낑낑거릴 때',
+    '급식 탕수육 소스가 옷에 튀어 얼룩 생겼을 때',
+    '싫어하는 반찬 나와서 밥 밑에 몰래 파묻고 숨길 때',
+    '우유 급식 시간에 제티(초코가루) 몰래 타서 섞어 마실 때',
+    '국 배식받고 자리 가다가 국물이 찰랑거려 얼어붙었을 때',
+    '선생님 몰래 급식 다 먹은 척 퇴식구로 지나가려다 걸렸을 때',
+    '피구 경기 중 날아오는 강속구에 정통으로 맞고 아웃당할 때',
+    '뜀틀 넘으려고 전력질주하다가 뜀틀 바로 앞에서 급정거했을 때',
+    '철봉에 거꾸로 매달려 피 쏠려 어지러워할 때',
+    '줄넘기 쌩쌩이(2단뛰기) 5번 연속 성공하고 숨 헐떡일 때',
+    '운동장 축구에서 골키퍼가 몸 날려 슈퍼세이브로 공 막았을 때',
+    '교탁 탁탁 쳤는데 분필이 반 토막 나서 저 멀리 날아갔을 때',
+    '등교 지도 중 지각해서 전력질주하는 학생 손짓으로 부를 때',
+    '교생 실습 첫날 교실 문 열기 직전 심호흡하며 옷매무새 다듬을 때',
+    '아이들이 몰려와 \'선생님 결혼했어요?\' 물어봐서 당황할 때',
+    '친구 둘이 싸우기 직전 번개처럼 달려가 양손으로 뜯어말릴 때',
+    '하교 시간 알림장 검사 도장을 번개처럼 폭풍으로 찍어줄 때',
+    '우유팩 분리수거통에서 덜 마신 우유팩 찾아내 범인 둘러볼 때',
+    '방학식 종례 끝나고 아이들 다 나가자마자 교탁에 엎드려 만세 부를 때',
+    '피구에서 우리 팀 마지막 1명으로 살아남아 공을 요리조리 피할 때',
+    '쉬는 시간 지우개 싸움에서 손가락으로 지우개 튕길 때',
+    '급식 맛있는 반찬 더 받으려고 배식 선생님께 애교 부릴 때',
+    '사물함 뒤에 숨어 친구와 비밀 이야기 속닥거릴 때',
+  ]},
+  { id: 'crisis', name: '위기 상황', emoji: '🚨', items: [
+    '자려고 불 껐는데 귓가에 모기 소리 들릴 때',
+    '버스 급정거에 손잡이 없이 중심잡을 때',
+    '뜨거운 국밥 첫 숟갈 먹고 입천장 데었을 때',
+    '사람 많은 길에서 발목 삐끗했는데 안 아픈 척할 때',
+    '엘리베이터에 갇혀서 비상벨 누를 때',
+    '화장실에서 볼일 다 봤는데 휴지가 없을 때',
+    '지하철에서 졸다가 옆 사람 어깨에 기댔을 때',
+    '반갑게 손 흔들며 인사했는데 모르는 사람이었을 때',
+    '비둘기 떼가 갑자기 나를 향해 날아올 때',
+    '샤워 중 갑자기 찬물이 쏟아질 때',
+    '자동문이 안 열려서 유리문에 얼굴 박았을 때',
+    '손에 든 아이스크림이 땅에 떨어지기 직전일 때',
+    '휴대폰이 변기에 빠지기 직전 잡으려 할 때',
+    '조용한 시험 시간에 배에서 꼬르륵 소리 날 때',
+    '바퀴벌레가 방바닥을 가로질러 나한테 달려올 때',
+    '문 잠그고 나왔는데 열쇠를 안에 두고 온 걸 깨달았을 때',
+    '꽁꽁 언 빙판길을 펭귄처럼 살금살금 걸어갈 때',
+    '재채기가 나올 듯 말 듯 멈춘 채 기다릴 때',
+    '벌 한 마리가 머리 주위를 계속 맴돌 때',
+    '계단에서 한 칸 헛디뎌 휘청일 때',
+    '비닐봉지 손잡이가 끊어져 과일이 쏟아질 때',
+    '중요한 면접 중 딸꾹질이 멈추지 않을 때',
+  ]},
+  { id: 'movie', name: '영화/동화', emoji: '🎬', items: [
+    '좀비를 피해 문을 잠그고 문에 등을 기댈 때',
+    '괴도 루팡이 레이저 트랩 사이로 몸을 비틀어 지나갈 때',
+    '신데렐라가 자정 종소리에 유리구두 벗겨지며 도망칠 때',
+    '무인도에서 지나가는 배를 보고 SOS 외치며 옷을 흔들 때',
+    '스파이더맨처럼 거미줄 쏘며 빌딩 사이를 날아갈 때',
+    '타이타닉 뱃머리에서 두 팔 벌리고 바람 맞을 때',
+    '백설공주가 독사과를 한 입 베어 물고 쓰러질 때',
+    '피노키오가 거짓말해서 코가 쭉쭉 길어질 때',
+    '해리포터가 빗자루 타고 하늘을 날 때',
+    '잭이 콩나무를 타고 구름 위로 올라갈 때',
+    '공룡 발소리에 컵 속 물이 출렁여 숨죽일 때',
+    '매트릭스처럼 몸을 뒤로 젖혀 총알 피할 때',
+    '인어공주가 처음으로 두 다리로 걸어볼 때',
+    '흥부가 박을 톱으로 켜자 금은보화가 쏟아질 때',
+    '토끼와 거북이 경주에서 토끼가 낮잠 자다 깼을 때',
+    '슈퍼맨이 망토 휘날리며 하늘로 날아오를 때',
+    '알라딘이 요술램프 문지르자 지니가 튀어나올 때',
+    '미라가 붕대를 늘어뜨리며 관에서 천천히 일어날 때',
+    '헨젤과 그레텔이 과자집 벽을 뜯어 먹을 때',
+    '스파이가 환풍구를 기어서 몰래 잠입할 때',
+    '늑대가 입김으로 아기 돼지 초가집을 날려버릴 때',
+    '공포영화 보다가 깜짝 놀라 팝콘을 쏟았을 때',
+  ]},
+  { id: 'object', name: '사물 의인화', emoji: '🍿', items: [
+    '전자레인지 속 팝콘이 하나둘 터질 때',
+    '얼음물에 풍덩 입수하는 얼음 조각',
+    '바람이 빠지며 쪼그라드는 풍선',
+    '불닭볶음면 먹고 입에서 불 뿜는 용',
+    '토스터에서 튀어 오르는 식빵',
+    '건조기 안에서 빙글빙글 도는 양말',
+    '뜨거운 프라이팬 위에서 녹아내리는 버터',
+    '흔들린 탄산음료 뚜껑이 펑 터질 때',
+    '햇볕에 녹아 흘러내리는 아이스크림',
+    '전원 꺼지기 직전 배터리 1% 스마트폰',
+    '강풍에 홀라당 뒤집힌 우산',
+    '물이 끓어 뚜껑이 들썩이는 주전자',
+    '발에 밟혀 납작해진 음료 캔',
+    '알람 울리며 부르르 떠는 자명종 시계',
+    '물 먹고 쑥쑥 자라나는 새싹',
+    '탈수 모드에서 덜덜덜 떠는 세탁기',
+    '상자에서 튀어나오는 스프링 인형',
+    '청소기에 빨려 들어가는 먼지',
+    '믹서기 속에서 갈리는 과일',
+    '배수구로 소용돌이치며 빠져나가는 욕조 물',
+    '햇볕에 서서히 녹아내리는 눈사람',
+    '당겨졌다가 튕겨 나가는 새총 고무줄',
+  ]},
+];
+const CAT_OPTIONS = [
+  { id: 'random', name: '전체 랜덤', emoji: '🎲', items: CATEGORIES.flatMap(c => c.items) },
+  ...CATEGORIES,
+];
+
+/* ---------- 별 배경 (라이브러리 로드 전에 먼저 그림) ---------- */
+{
+  const box = document.getElementById('stars');
+  for (let i = 0; i < 60; i++) {
+    const s = document.createElement('i');
+    const size = Math.random() < 0.15 ? 3 : Math.random() < 0.5 ? 2 : 1;
+    s.style.cssText = `left:${Math.random() * 100}%;top:${Math.random() * 100}%;width:${size}px;height:${size}px;animation-delay:${Math.random() * 4}s;animation-duration:${2 + Math.random() * 4}s`;
+    box.appendChild(s);
+  }
+}
+
+/* ---------- Preact + htm (빌드 없이 쓰는 초경량 React) ---------- */
+let lib;
+try {
+  lib = await import('https://unpkg.com/htm@3.1.1/preact/standalone.module.js');
+} catch (e) {
+  try {
+    lib = await import('https://cdn.jsdelivr.net/npm/htm@3.1.1/preact/standalone.module.js');
+  } catch (e2) {
+    document.getElementById('root').innerHTML = '<p class="fatal">📡 게임을 불러오지 못했어요.<br>인터넷 연결을 확인하고 새로고침 해 주세요.</p>';
+    throw e2;
+  }
+}
+const { html, render, useState, useEffect, useRef, useMemo } = lib;
+
+/* ---------- 유틸 ---------- */
+const range = n => Array.from({ length: n }, (_, i) => i);
+const shuffle = arr => {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+};
+const maxAliens = n => Math.max(1, Math.floor((n - 1) / 2));
+
+function getPool(catId) {
+  const cats = catId === 'random' ? CATEGORIES : CATEGORIES.filter(c => c.id === catId);
+  return cats.flatMap(c => c.items.map(text => ({ text, cat: c })));
+}
+
+// 한 세션 안에서는 같은 장면이 반복되지 않도록 기억
+const usedKeywords = new Set();
+function pickKeyword(catId) {
+  const pool = getPool(catId);
+  let fresh = pool.filter(k => !usedKeywords.has(k.text));
+  if (!fresh.length) {
+    pool.forEach(k => usedKeywords.delete(k.text));
+    fresh = pool;
+  }
+  const k = fresh[Math.floor(Math.random() * fresh.length)];
+  usedKeywords.add(k.text);
+  return k;
+}
+
+function newGame(s) {
+  const n = s.players;
+  const aliens = shuffle(range(n)).slice(0, Math.min(s.aliens, maxAliens(n))).sort((a, b) => a - b);
+  // 표현 순서는 무작위, 단 외계인은 1번 순서가 되지 않게 (흉내 낼 대상이 없으므로)
+  const order = shuffle(range(n));
+  if (aliens.includes(order[0])) {
+    const j = order.findIndex(p => !aliens.includes(p));
+    [order[0], order[j]] = [order[j], order[0]];
+  }
+  return {
+    n, aliens, order, kw: pickKeyword(s.category),
+    relaySec: s.relaySec, discussSec: s.discussSec, alienHint: s.alienHint,
+    round: 1, voted: null,
+  };
+}
+
+/* ---------- 설정 저장 ---------- */
+const DEFAULTS = { players: 5, aliens: 1, category: 'random', relaySec: 5, discussSec: 30, alienHint: false, sound: true };
+const SKEY = 'nvm-settings-v1';
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SKEY);
+    if (raw) return { ...DEFAULTS, ...JSON.parse(raw) };
+  } catch (e) {}
+  return { ...DEFAULTS };
+}
+function saveSettings(s) {
+  try { localStorage.setItem(SKEY, JSON.stringify(s)); } catch (e) {}
+}
+
+/* ---------- 소리 · 진동 · 화면 꺼짐 방지 ---------- */
+const SOUND = { on: true };
+let actx = null;
+function audio() {
+  if (!actx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) actx = new AC();
+  }
+  if (actx && actx.state === 'suspended') actx.resume();
+  return actx;
+}
+function beep(freq = 880, dur = 0.12, type = 'sine', vol = 0.22) {
+  if (!SOUND.on) return;
+  const c = audio();
+  if (!c) return;
+  const o = c.createOscillator();
+  const g = c.createGain();
+  o.type = type;
+  o.frequency.value = freq;
+  g.gain.setValueAtTime(vol, c.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + dur);
+  o.connect(g).connect(c.destination);
+  o.start();
+  o.stop(c.currentTime + dur + 0.02);
+}
+function vibrate(p) {
+  try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) {}
+}
+// iOS는 첫 터치 때 오디오를 깨워야 소리가 남
+window.addEventListener('pointerdown', () => { if (SOUND.on) audio(); }, { once: true });
+
+let wakeLock = null;
+async function keepAwake() {
+  try {
+    if ('wakeLock' in navigator && !wakeLock) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    }
+  } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') keepAwake();
+});
+
+/* ---------- 카운트다운 훅 ---------- */
+function useCountdown(totalSec, running, { resetKey, onSecond, onDone }) {
+  const [left, setLeft] = useState(totalSec * 1000);
+  const remainRef = useRef(totalSec * 1000);
+  const cbs = useRef({});
+  cbs.current = { onSecond, onDone };
+
+  useEffect(() => {
+    remainRef.current = totalSec * 1000;
+    setLeft(totalSec * 1000);
+  }, [totalSec, resetKey]);
+
+  useEffect(() => {
+    if (!running || remainRef.current <= 0) return;
+    const end = performance.now() + remainRef.current;
+    let lastSec = Math.ceil(remainRef.current / 1000);
+    const id = setInterval(() => {
+      const rem = Math.max(0, end - performance.now());
+      remainRef.current = rem;
+      setLeft(rem);
+      const s = Math.ceil(rem / 1000);
+      if (s !== lastSec) {
+        lastSec = s;
+        if (s > 0 && cbs.current.onSecond) cbs.current.onSecond(s);
+      }
+      if (rem <= 0) {
+        clearInterval(id);
+        if (cbs.current.onDone) cbs.current.onDone();
+      }
+    }, 50);
+    return () => clearInterval(id);
+  }, [running, totalSec, resetKey]);
+
+  return left;
+}
+
+/* =====================================================================
+   공통 컴포넌트
+   ===================================================================== */
+function Ufo({ small }) {
+  return html`
+    <div class=${'ufo-wrap' + (small ? ' sm' : '')} aria-hidden="true">
+      <svg class="ufo" viewBox="0 0 200 170">
+        <defs>
+          <linearGradient id="g-beam" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#3ef2ff" stop-opacity=".6"/>
+            <stop offset="1" stop-color="#3ef2ff" stop-opacity="0"/>
+          </linearGradient>
+          <radialGradient id="g-dome" cx=".4" cy=".35" r=".7">
+            <stop offset="0" stop-color="#e6fdff"/>
+            <stop offset=".6" stop-color="#6fe7ff" stop-opacity=".8"/>
+            <stop offset="1" stop-color="#2a8cff" stop-opacity=".6"/>
+          </radialGradient>
+          <linearGradient id="g-hull" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#c7cdff"/>
+            <stop offset="1" stop-color="#4b4f9a"/>
+          </linearGradient>
+        </defs>
+        <polygon class="beam" points="72,80 128,80 178,170 22,170" fill="url(#g-beam)"/>
+        <ellipse cx="100" cy="54" rx="34" ry="32" fill="url(#g-dome)"/>
+        <text x="100" y="66" font-size="30" text-anchor="middle">👽</text>
+        <ellipse cx="100" cy="74" rx="88" ry="22" fill="url(#g-hull)"/>
+        <ellipse cx="100" cy="68" rx="86" ry="12" fill="#9aa2ff" opacity=".45"/>
+        ${[34, 67, 100, 133, 166].map((x, i) => html`
+          <circle class="light" cx=${x} cy=${i === 0 || i === 4 ? 76 : 82} r="5" style=${{ animationDelay: i * 0.2 + 's' }}/>`)}
+      </svg>
+    </div>`;
+}
+
+function TopBar({ title, onBack, right }) {
+  return html`
+    <div class="topbar">
+      <button class="icon-btn" aria-label="뒤로" onClick=${onBack}>‹</button>
+      <h2>${title}</h2>
+      ${right || html`<div class="icon-btn ghost"></div>`}
+    </div>`;
+}
+
+function Stepper({ label, value, min, max, onChange, suffix }) {
+  return html`
+    <div class="stepper">
+      <div class="s-label">${label}</div>
+      <div class="s-ctrl">
+        <button aria-label="줄이기" disabled=${value <= min} onClick=${() => onChange(value - 1)}>−</button>
+        <div class="val">${value}<small>${suffix}</small></div>
+        <button aria-label="늘리기" disabled=${value >= max} onClick=${() => onChange(value + 1)}>+</button>
+      </div>
+    </div>`;
+}
+
+function Seg({ options, value, onChange, fmt }) {
+  return html`
+    <div class="seg">
+      ${options.map(o => html`
+        <button class=${o === value ? 'on' : ''} onClick=${() => onChange(o)}>${fmt ? fmt(o) : o}</button>`)}
+    </div>`;
+}
+
+function Toggle({ label, desc, value, onChange }) {
+  return html`
+    <button class=${'toggle' + (value ? ' on' : '')} role="switch" aria-checked=${value} onClick=${() => onChange(!value)}>
+      <span class="t-text"><b>${label}</b>${desc && html`<small>${desc}</small>`}</span>
+      <span class="switch"></span>
+    </button>`;
+}
+
+function Ring({ left, total, color, urgent }) {
+  const r = 88;
+  const C = 2 * Math.PI * r;
+  const frac = total ? Math.max(0, Math.min(1, left / (total * 1000))) : 0;
+  return html`
+    <div class=${'ring' + (urgent ? ' urgent' : '')} style=${{ color }}>
+      <svg viewBox="0 0 200 200">
+        <circle class="ring-bg" cx="100" cy="100" r=${r}/>
+        <circle class="ring-fg" cx="100" cy="100" r=${r} transform="rotate(-90 100 100)"
+          style=${{ stroke: color, strokeDasharray: `${C}`, strokeDashoffset: `${C * (1 - frac)}`, filter: `drop-shadow(0 0 8px ${color})` }}/>
+      </svg>
+      <div class="ring-num">${Math.ceil(left / 1000)}</div>
+    </div>`;
+}
+
+function Confetti() {
+  const bits = useMemo(() => range(28).map(i => ({
+    left: Math.random() * 100,
+    delay: Math.random() * 1.2,
+    dur: 2.2 + Math.random() * 1.6,
+    e: ['✨', '⭐', '🎉', '🛸', '👽', '🌍'][i % 6],
+  })), []);
+  return html`
+    <div class="confetti" aria-hidden="true">
+      ${bits.map(b => html`<span style=${{ left: b.left + '%', animationDelay: b.delay + 's', animationDuration: b.dur + 's' }}>${b.e}</span>`)}
+    </div>`;
+}
+
+/* ---------- 릴레이 진행기 (게임 · 도구 모드 공용) ---------- */
+function RelayRunner({ order, seconds, renderDone, onStop }) {
+  const [step, setStep] = useState(-1); // -1 = 준비 카운트
+  const [paused, setPaused] = useState(false);
+  const [done, setDone] = useState(false);
+  const total = step < 0 ? 3 : seconds;
+
+  const advance = () => {
+    if (step + 1 >= order.length) {
+      setDone(true);
+      [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep(f, 0.18, 'triangle'), i * 110));
+      vibrate([200, 100, 200]);
+    } else {
+      setStep(step + 1);
+      beep(988, 0.22, 'square', 0.12);
+      vibrate(150);
+    }
+  };
+
+  const left = useCountdown(total, !paused && !done, {
+    resetKey: step,
+    onSecond: s => { if (s <= 3) beep(step < 0 ? 600 : 740, 0.07, 'sine', 0.16); },
+    onDone: advance,
+  });
+
+  if (done) return renderDone();
+
+  const cur = step >= 0 ? order[step] : null;
+  const next = order[step + 1];
+  return html`
+    <div class="flash" key=${'f' + step}></div>
+    <div class="relay-stage">
+      ${step < 0
+        ? html`<div class="relay-label">준비하세요!</div>
+               <div class="relay-player sm neon-yellow">첫 순서: ${order[0] + 1}번</div>`
+        : html`<div class="relay-label">지금 표현 중 🤫</div>
+               <div class="relay-player neon-cyan" key=${'p' + step}>${cur + 1}번</div>`}
+      <${Ring} left=${left} total=${total} color=${step < 0 ? '#ffe14a' : '#3ef2ff'} urgent=${!paused && left <= 2000}/>
+      <div class="muted">${step < 0 ? '신호음과 함께 시작해요' : next != null ? `다음 차례: ${next + 1}번` : '마지막 순서예요!'}</div>
+    </div>
+    <div class="order-strip">
+      ${order.map((p, k) => html`<span class=${'order-chip' + (k === step ? ' current' : '') + (k < step ? ' done' : '')}>${p + 1}</span>`)}
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onClick=${() => setPaused(!paused)}>${paused ? '▶ 계속' : '⏸ 일시정지'}</button>
+      <button class="btn btn-ghost" onClick=${advance}>⏭ 건너뛰기</button>
+    </div>
+    ${onStop && html`<button class="btn btn-ghost" onClick=${onStop}>■ 중지</button>`}`;
+}
+
+/* ---------- 토론 타이머 (게임 · 도구 모드 공용) ---------- */
+function DiscussTimer({ seconds, autoStart, onFinish }) {
+  const [running, setRunning] = useState(!!autoStart);
+  const [finished, setFinished] = useState(false);
+  const [rk, setRk] = useState(0);
+
+  const left = useCountdown(seconds, running && !finished, {
+    resetKey: rk,
+    onSecond: s => {
+      if (s <= 5) beep(700, 0.07, 'sine', 0.16);
+      else if (s === 10) { beep(520, 0.15); vibrate(80); }
+    },
+    onDone: () => {
+      setFinished(true);
+      setRunning(false);
+      beep(523, 0.2, 'triangle');
+      setTimeout(() => beep(392, 0.5, 'triangle'), 220);
+      vibrate([300, 120, 300]);
+      if (onFinish) onFinish();
+    },
+  });
+
+  const reset = () => { setRk(rk + 1); setFinished(false); setRunning(false); };
+  const main = () => {
+    if (finished) { setRk(rk + 1); setFinished(false); setRunning(true); }
+    else { keepAwake(); setRunning(!running); }
+  };
+
+  return html`
+    <div class="relay-stage">
+      <${Ring} left=${left} total=${seconds} color="#ff4fd8" urgent=${running && left <= 5000}/>
+      ${finished
+        ? html`<div class="relay-player sm neon-pink">⏰ 시간 종료!</div>`
+        : html`<div class="relay-label">${running ? '🤫 소리 없이 토론 중…' : '준비되면 시작을 누르세요'}</div>`}
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onClick=${main}>${running ? '⏸ 일시정지' : finished ? '🔁 다시' : '▶ 시작'}</button>
+      <button class="btn btn-ghost" onClick=${reset}>↺ 리셋</button>
+    </div>`;
+}
+
+/* =====================================================================
+   화면들
+   ===================================================================== */
+/* ---------- QR 공유 화면 ---------- */
+let qrLib = null;
+function loadQrLib() {
+  if (window.qrcode) return Promise.resolve(window.qrcode);
+  if (qrLib) return qrLib;
+  qrLib = new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+    s.onload = () => resolve(window.qrcode);
+    s.onerror = () => { qrLib = null; reject(new Error('qr')); };
+    document.head.appendChild(s);
+  });
+  return qrLib;
+}
+
+function Share({ onBack }) {
+  const url = location.href.split('#')[0];
+  const isLocal = !/^https?:/.test(url) || /localhost|127\.0\.0\.1/.test(url);
+  const [svg, setSvg] = useState(null);
+  const [err, setErr] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    loadQrLib().then(qrcode => {
+      const qr = qrcode(0, 'M');
+      qr.addData(url);
+      qr.make();
+      setSvg(qr.createSvgTag({ cellSize: 8, margin: 2, scalable: true }));
+    }).catch(() => setErr(true));
+  }, []);
+
+  const copy = async () => {
+    try { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch (e) {}
+  };
+
+  return html`
+    <${TopBar} title="QR로 친구들 초대" onBack=${onBack}/>
+    <p class="center" style=${{ fontSize: '17px', fontWeight: 700, lineHeight: 1.5 }}>📱 카메라로 찍으면<br/>바로 게임이 열려요!</p>
+    <div class="qr-box">
+      ${svg ? html`<div class="qr" dangerouslySetInnerHTML=${{ __html: svg }}></div>`
+        : err ? html`<p class="muted">QR을 만들지 못했어요.<br/>인터넷 연결을 확인해 주세요.</p>`
+        : html`<p class="muted">QR 만드는 중…</p>`}
+    </div>
+    <div class="card center">
+      <div class="label">🔗 게임 주소</div>
+      <div class="url">${url}</div>
+    </div>
+    ${isLocal && html`<p class="warn center">⚠️ 지금은 내 컴퓨터에서 연 주소라 다른 폰에서는 열리지 않아요.<br/>GitHub Pages에 올린 뒤 그 주소에서 이 화면을 열어 주세요.</p>`}
+    <div class="spacer"></div>
+    <button class="btn btn-cyan" onClick=${copy}>${copied ? '✅ 복사됨!' : '📋 주소 복사하기'}</button>`;
+}
+
+function Home({ onPlay, onTools, onShare, settings, setSettings }) {
+  return html`
+    <div class="home-top">
+      <button class="icon-btn" aria-label="QR 코드" onClick=${onShare} style=${{ fontSize: '13px', fontWeight: 900 }}>QR</button>
+      <div class="spacer"></div>
+      <button class="icon-btn" aria-label=${settings.sound ? '소리 끄기' : '소리 켜기'}
+        onClick=${() => setSettings({ ...settings, sound: !settings.sound })}>${settings.sound ? '🔊' : '🔇'}</button>
+    </div>
+    <${Ufo}/>
+    <div class="hero">
+      <div class="badge">🤫 NO-VOICE GAME</div>
+      <h1><span class="t1 neon-cyan">무성 마피아</span><span class="t2 neon-pink">외계인을 찾아라</span></h1>
+      <p class="muted">목소리 없이 표정과 손짓만으로!<br/>지구인 사이에 숨어든 외계인을 찾아내세요.</p>
+    </div>
+    <button class="mode-card cyan" onClick=${onPlay}>
+      <span class="m-emoji">📱</span>
+      <span><b>패스 & 플레이</b><small>폰 1대를 돌려가며 역할 확인 → 릴레이 표현 → 무음 토론 → 투표</small></span>
+    </button>
+    <button class="mode-card pink" onClick=${onTools}>
+      <span class="m-emoji">🎰</span>
+      <span><b>키워드 룰렛 / 타이머</b><small>장면 뽑기 · 릴레이 표현 타이머 · 무음 토론 타이머</small></span>
+    </button>
+    <details class="card rules">
+      <summary>📜 게임 방법</summary>
+      <ol>
+        <li>폰을 돌려가며 각자 <b>몰래</b> 역할을 확인해요. 지구인은 장면 키워드를 받고, 외계인은 아무것도 모릅니다.</li>
+        <li><b>릴레이 표현</b> — 정해진 순서대로 한 명씩 3~5초 동안 목소리 없이 표정·손짓으로 장면을 표현해요.</li>
+        <li><b>무음 토론</b> — 30초 동안 말없이 몸짓으로만 누가 수상한지 추리해요.</li>
+        <li><b>투표</b> — "하나, 둘, 셋!"에 동시에 외계인을 가리켜요.</li>
+        <li>외계인을 잡으면 지구인 승리! 하지만 잡힌 외계인이 장면을 맞히면 <b>외계인 역전승</b>!</li>
+      </ol>
+      <p class="warn mt">🤫 게임 중에는 절대 목소리를 내지 마세요!</p>
+    </details>`;
+}
+
+function Setup({ settings: s, setSettings, onBack, onStart }) {
+  const set = (k, v) => {
+    const ns = { ...s, [k]: v };
+    if (k === 'players') ns.aliens = Math.min(ns.aliens, maxAliens(v));
+    setSettings(ns);
+  };
+  return html`
+    <${TopBar} title="게임 설정" onBack=${onBack}/>
+    <div class="card">
+      <${Stepper} label="👥 플레이어 수" value=${s.players} min=${3} max=${10} suffix="명" onChange=${v => set('players', v)}/>
+      <div class="divider"></div>
+      <${Stepper} label="👽 외계인 수" value=${s.aliens} min=${1} max=${maxAliens(s.players)} suffix="명" onChange=${v => set('aliens', v)}/>
+    </div>
+    <div class="card">
+      <div class="label">🎬 장면 카테고리</div>
+      <div class="chips">
+        ${CAT_OPTIONS.map(c => html`
+          <button class=${'chip' + (s.category === c.id ? ' on' : '')} onClick=${() => set('category', c.id)}>
+            <span>${c.emoji} ${c.name}</span><small>${c.items.length}개 장면</small>
+          </button>`)}
+      </div>
+    </div>
+    <div class="card">
+      <div class="label">⏱ 1인당 표현 시간</div>
+      <${Seg} options=${[3, 4, 5]} value=${s.relaySec} fmt=${v => v + '초'} onChange=${v => set('relaySec', v)}/>
+      <div class="label mt">🤫 무음 토론 시간</div>
+      <${Seg} options=${[30, 45, 60]} value=${s.discussSec} fmt=${v => v + '초'} onChange=${v => set('discussSec', v)}/>
+    </div>
+    <div class="card">
+      <${Toggle} label="🛸 외계인에게 카테고리 힌트" desc="켜면 외계인도 카테고리 이름은 알 수 있어요 (외계인 난이도 ↓)"
+        value=${s.alienHint} onChange=${v => set('alienHint', v)}/>
+    </div>
+    <button class="btn btn-cyan" onClick=${onStart}>🛸 역할 배정 시작</button>`;
+}
+
+function Reveal({ game, onDone, onExit }) {
+  const [i, setI] = useState(0);
+  const [stage, setStage] = useState('pass'); // pass | view
+  const [hold, setHold] = useState(false);
+  const [seen, setSeen] = useState(false);
+  const [warp, setWarp] = useState(false);
+  const last = i + 1 >= game.n;
+  const isAlien = game.aliens.includes(i);
+  const mates = game.aliens.filter(a => a !== i);
+  const myTurn = game.order.indexOf(i) + 1;
+
+  const down = e => {
+    e.preventDefault();
+    setHold(true);
+    if (!seen) vibrate(30);
+    setSeen(true);
+  };
+  const up = () => setHold(false);
+
+  const next = () => {
+    setHold(false);
+    setWarp(true);
+    beep(440, 0.1, 'sine', 0.12);
+    setTimeout(() => beep(880, 0.12, 'sine', 0.12), 120);
+    setTimeout(() => {
+      setWarp(false);
+      if (last) onDone();
+      else { setI(i + 1); setStage('pass'); setSeen(false); }
+    }, 950);
+  };
+
+  const progress = html`
+    <div class="progress">
+      ${range(game.n).map(k => html`<i class=${k < i ? 'done' : k === i ? 'cur' : ''}></i>`)}
+    </div>`;
+
+  return html`
+    <${TopBar} title=${`역할 확인 ${i + 1} / ${game.n}`} onBack=${onExit}/>
+    ${progress}
+    ${stage === 'pass' ? html`
+      <div class="pass" key=${'pass' + i}>
+        <div class="pass-hand">🤲📱</div>
+        <div class="pass-num neon-cyan">${i + 1}번</div>
+        <p style=${{ fontSize: '18px', fontWeight: 700 }}>${i === 0 ? '1번 플레이어부터 시작해요' : `${i + 1}번 플레이어에게 폰을 넘겨주세요`}</p>
+        <p class="muted">다른 사람들은 화면을 보지 마세요 🙈</p>
+      </div>
+      <button class="btn btn-cyan" onClick=${() => setStage('view')}>👀 ${i + 1}번 플레이어 확인하기</button>
+    ` : html`
+      <div class=${'hold' + (hold ? ' on' : '') + (isAlien ? ' alien' : ' citizen')}
+        onPointerDown=${down} onPointerUp=${up} onPointerCancel=${up} onPointerLeave=${up}
+        onContextMenu=${e => e.preventDefault()}>
+        ${!hold ? html`
+          <div class="hold-cover">
+            <div class="finger">👆</div>
+            <b>여기를 꾹 누르고 있으면<br/>역할이 보여요</b>
+            <small>손을 떼면 바로 가려져요.<br/>주변 사람이 못 보게 화면을 가려주세요!</small>
+          </div>
+        ` : isAlien ? html`
+          <div class="role alien">
+            <div class="alien-face">👽</div>
+            <div class="role-tag">외계인 (마피아)</div>
+            <p class="mission">당신은 키워드를 모릅니다!<br/>앞사람들의 표정과 동작을 눈치껏 보고<br/>태연하게 흉내 내어 살아남으세요.</p>
+            ${game.alienHint && html`<p class="extra">🛸 힌트: 카테고리는 “${game.kw.cat.name}”</p>`}
+            ${mates.length > 0 && html`<p class="extra">🤝 동료 외계인: ${mates.map(m => m + 1 + '번').join(', ')}</p>`}
+            <p class="my-turn">🎭 당신의 표현 순서: ${myTurn}번째</p>
+          </div>
+        ` : html`
+          <div class="role citizen">
+            <div class="role-tag">🌍 지구인 (시민)</div>
+            <div class="kw-label">미션 장면</div>
+            <div class="kw">“${game.kw.text}”</div>
+            <div class="cat">${game.kw.cat.emoji} ${game.kw.cat.name}</div>
+            <p class="tip">💡 목소리를 내지 말고, ${game.relaySec}초 동안 표정과 손짓으로 상황을 묘사하세요!</p>
+            <p class="my-turn">🎭 당신의 표현 순서: ${myTurn}번째</p>
+          </div>
+        `}
+      </div>
+      <button class="btn btn-lime" disabled=${!seen} onClick=${next}>
+        ${!seen ? '먼저 역할을 확인하세요' : last ? '✅ 확인 완료! 모두 확인했어요' : '✅ 확인 완료 · 다음 사람에게 전달'}
+      </button>
+    `}
+    ${warp && html`
+      <div class="warp">
+        <div class="ufo-fly"><${Ufo} small/></div>
+        <p class="neon-cyan" style=${{ fontSize: '20px', fontWeight: 900 }}>${last ? '모든 역할 배정 완료!' : `${i + 2}번에게 전달 중…`}</p>
+      </div>`}`;
+}
+
+function Ready({ game, onStart, onExit }) {
+  return html`
+    <${TopBar} title="준비 완료" onBack=${onExit}/>
+    <${Ufo} small/>
+    <h2 class="center neon-lime" style=${{ fontSize: '26px', fontWeight: 900 }}>모두 역할을 확인했어요!</h2>
+    <div class="card">
+      <div class="label">🎭 릴레이 표현 순서</div>
+      <div class="order-strip">
+        ${game.order.map((p, k) => html`
+          <span class="order-chip">${p + 1}</span>${k < game.n - 1 && html`<span class="arrow">›</span>`}`)}
+      </div>
+    </div>
+    <div class="card ready-list">
+      <p>🤫 지금부터 <b>목소리 금지!</b></p>
+      <p>⏱ 한 사람당 <b>${game.relaySec}초</b>, 신호음과 화면 번쩍임이 오면 다음 사람!</p>
+      <p>👀 외계인은 앞사람을 따라 하고 있어요. 잘 관찰하세요.</p>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn btn-cyan" onClick=${onStart}>🚀 게임 시작</button>`;
+}
+
+function RelayPhase({ game, onDiscuss, onExit }) {
+  const [run, setRun] = useState(0);
+  return html`
+    <${TopBar} title=${`라운드 ${game.round} · 릴레이 표현`} onBack=${onExit}/>
+    <${RelayRunner} key=${run} order=${game.order} seconds=${game.relaySec} renderDone=${() => html`
+      <div class="done-box">
+        <div class="big-emoji">✅</div>
+        <h3>한 바퀴 완료!</h3>
+        <p class="muted">외계인이 누구인지 감이 오나요?</p>
+      </div>
+      <button class="btn btn-pink" onClick=${onDiscuss}>🤫 무음 토론 시작 (${game.discussSec}초)</button>
+      <button class="btn btn-ghost" onClick=${() => setRun(run + 1)}>🔁 한 바퀴 더 표현하기</button>`}/>`;
+}
+
+function DiscussPhase({ game, onVote, onRelay, onExit }) {
+  const [finished, setFinished] = useState(false);
+  return html`
+    <${TopBar} title="무음 토론" onBack=${onExit}/>
+    <div class="card center">
+      <p style=${{ lineHeight: 1.6 }}><b>소리 없이</b> 손짓 · 표정 · 눈빛으로만 토론하세요!<br/><span class="muted">누가 외계인 같나요? 👀</span></p>
+    </div>
+    <${DiscussTimer} seconds=${game.discussSec} autoStart onFinish=${() => setFinished(true)}/>
+    <button class=${'btn ' + (finished ? 'btn-pink' : 'btn-ghost')} onClick=${onVote}>
+      ${finished ? '🗳 투표하러 가기' : '🗳 바로 투표하기'}
+    </button>
+    <button class="btn btn-ghost" onClick=${onRelay}>🔁 릴레이 한 번 더</button>`;
+}
+
+function Vote({ game, onPick, onBack }) {
+  const [sel, setSel] = useState(null);
+  const [cd, setCd] = useState(null);
+  const timer = useRef();
+  useEffect(() => () => clearInterval(timer.current), []);
+
+  const countdown = () => {
+    let v = 3;
+    setCd(v);
+    beep(600, 0.1);
+    vibrate(60);
+    clearInterval(timer.current);
+    timer.current = setInterval(() => {
+      v--;
+      if (v > 0) { setCd(v); beep(600, 0.1); vibrate(60); }
+      else if (v === 0) { setCd(0); beep(1046, 0.4, 'square', 0.14); vibrate(250); }
+      else { clearInterval(timer.current); setCd(null); }
+    }, 800);
+  };
+
+  return html`
+    <${TopBar} title="투표" onBack=${onBack}/>
+    <div class="card center vote-intro">
+      <p><b>“하나, 둘, 셋!”</b>에 맞춰 동시에<br/>외계인이라고 생각하는 사람을 가리키세요 👉</p>
+      <p class="muted" style=${{ fontSize: '14px', marginTop: '6px' }}>가장 많이 지목된 사람을 아래에서 선택하세요.</p>
+    </div>
+    <button class="btn btn-ghost" onClick=${countdown}>⏱ 3 · 2 · 1 신호 보내기</button>
+    <div class="vote-grid">
+      ${range(game.n).map(p => html`
+        <button class=${'vote-btn' + (sel === p ? ' sel' : '')} onClick=${() => { setSel(p); vibrate(20); }}>
+          ${p + 1}<small>번</small>
+        </button>`)}
+    </div>
+    <div class="spacer"></div>
+    <button class="btn btn-pink" disabled=${sel == null} onClick=${() => onPick(sel)}>
+      ${sel == null ? '지목된 사람을 선택하세요' : `⚖️ ${sel + 1}번의 정체 공개!`}
+    </button>
+    ${cd != null && html`
+      <div class="count-overlay">
+        <span key=${cd} class=${cd === 0 ? 'go' : ''}>${cd > 0 ? cd : '👉 지목!'}</span>
+      </div>`}`;
+}
+
+function Result({ game, onAgain, onSetup, onHome }) {
+  const caught = game.aliens.includes(game.voted);
+  const [stage, setStage] = useState('drum'); // drum | verdict | chance | final
+  const [answer, setAnswer] = useState(false);
+  const [outcome, setOutcome] = useState(caught ? null : 'aliens');
+  const alienNames = game.aliens.map(a => a + 1 + '번').join(', ');
+  const caughtName = game.voted + 1 + '번';
+
+  useEffect(() => {
+    let k = 0;
+    const id = setInterval(() => beep(140 + (k++ % 2) * 40, 0.05, 'triangle', 0.22), 90);
+    const t = setTimeout(() => {
+      clearInterval(id);
+      setStage('verdict');
+      if (caught) [523, 659, 784, 1046].forEach((f, i) => setTimeout(() => beep(f, 0.18, 'triangle'), i * 110));
+      else [392, 330, 262].forEach((f, i) => setTimeout(() => beep(f, 0.25, 'sawtooth', 0.1), i * 180));
+      vibrate(caught ? [80, 60, 80, 60, 200] : [400]);
+    }, 2600);
+    return () => { clearInterval(id); clearTimeout(t); };
+  }, []);
+
+  const finish = o => {
+    setOutcome(o);
+    setStage('final');
+    beep(o === 'citizens' ? 1046 : 784, 0.3, 'triangle');
+  };
+
+  if (stage === 'drum') return html`
+    <div class="drum">
+      <p class="muted" style=${{ fontSize: '18px' }}>과연 정체는</p>
+      <div class="who neon-yellow">${caughtName}</div>
+      <p class="dots" style=${{ fontSize: '22px', fontWeight: 900 }}>두구두구</p>
+    </div>`;
+
+  if (stage === 'final') {
+    const win = outcome === 'citizens';
+    return html`
+      <${Confetti}/>
+      <div class=${'winner ' + (win ? 'citizens' : 'aliens')}>
+        <div class="w-emoji">${win ? '🌍' : '👽'}</div>
+        <h2 class=${win ? 'neon-lime' : 'neon-pink'}>${win ? '지구인 승리!' : outcome === 'steal' ? '외계인 역전승!' : '외계인 승리!'}</h2>
+        <p>${win ? '외계인을 잡고 장면도 지켜냈어요!' : outcome === 'steal' ? '잡혔지만 장면을 맞혀 버렸어요!' : '외계인이 지구인 사이에 무사히 숨었어요…'}</p>
+      </div>
+      <div class="card center">
+        <div class="label">🎬 이번 장면</div>
+        <div class="kw-box">“${game.kw.text}”</div>
+        <p class="muted" style=${{ fontSize: '13px', marginTop: '6px' }}>${game.kw.cat.emoji} ${game.kw.cat.name}</p>
+      </div>
+      <div class="card">
+        <div class="label">🧑‍🚀 정체 공개 <span style=${{ fontWeight: 400 }}>(노란 점선 = 지목된 사람)</span></div>
+        <div class="roster">
+          ${range(game.n).map(p => html`
+            <div class=${(game.aliens.includes(p) ? 'al' : '') + (p === game.voted ? ' out' : '')}>
+              <span>${game.aliens.includes(p) ? '👽' : '🌍'}</span>${p + 1}번
+            </div>`)}
+        </div>
+      </div>
+      <div class="spacer"></div>
+      <button class="btn btn-cyan" onClick=${onAgain}>🔁 같은 설정으로 한 판 더</button>
+      <div class="btn-row">
+        <button class="btn btn-ghost" onClick=${onSetup}>⚙️ 설정 바꾸기</button>
+        <button class="btn btn-ghost" onClick=${onHome}>🏠 처음으로</button>
+      </div>`;
+  }
+
+  return html`
+    ${caught ? html`
+      <div class="verdict">
+        <div class="v-emoji">👽</div>
+        <h2 class="neon-lime">외계인 검거 성공!</h2>
+        <p><b>${caughtName}</b>은(는) 외계인이었습니다!</p>
+        ${game.aliens.length > 1 && html`<p class="muted">이번 판의 외계인: ${alienNames}</p>`}
+        <p class="warn">잠깐! 외계인에게 마지막 역전 찬스가 있어요 🛸</p>
+      </div>
+      <button class="btn btn-pink" onClick=${() => setStage('chance')}>🛸 외계인의 역전 찬스</button>
+    ` : html`
+      <div class="verdict">
+        <div class="v-emoji">🌍</div>
+        <h2 class="neon-pink">앗, 지구인이었어요…</h2>
+        <p><b>${caughtName}</b>은(는) 억울한 지구인이었습니다.</p>
+        <p style=${{ fontSize: '18px' }}>진짜 외계인은 <b class="neon-pink">${alienNames}</b>!</p>
+      </div>
+      <button class="btn btn-pink" onClick=${() => finish('aliens')}>결과 보기</button>
+    `}
+    ${stage === 'chance' && html`
+      <div class="modal-bg">
+        <div class="modal">
+          <div class="big-emoji">🛸</div>
+          <h3 class="neon-pink">외계인의 역전 찬스!</h3>
+          <p><b>${caughtName}</b> 외계인은 지구인들이 표현한 장면이 무엇이었는지 맞혀 보세요.<br/><span class="muted">수어 · 몸짓 또는 종이에 써서 답해요.</span></p>
+          ${!answer ? html`
+            <button class="btn btn-cyan" onClick=${() => { setAnswer(true); beep(880, 0.2, 'triangle'); }}>📜 대답 끝! 정답 장면 공개</button>
+          ` : html`
+            <div class="answer">“${game.kw.text}”</div>
+            <p class="muted" style=${{ fontSize: '14px' }}>외계인의 답이 이 장면과 비슷했나요?</p>
+            <div class="btn-row">
+              <button class="btn btn-pink" onClick=${() => finish('steal')}>⭕ 맞혔다</button>
+              <button class="btn btn-lime" onClick=${() => finish('citizens')}>❌ 틀렸다</button>
+            </div>
+          `}
+        </div>
+      </div>`}`;
+}
+
+/* ---------- 키워드 룰렛 / 타이머 모드 ---------- */
+function Roulette() {
+  const [cat, setCat] = useState('random');
+  const [cur, setCur] = useState(null);
+  const [spinning, setSpinning] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const t = useRef();
+  useEffect(() => () => clearTimeout(t.current), []);
+
+  const spin = () => {
+    if (spinning) return;
+    const pool = getPool(cat);
+    setSpinning(true);
+    setHidden(false);
+    let d = 45;
+    const tick = () => {
+      d *= 1.13;
+      if (d > 340) {
+        setCur(pickKeyword(cat));
+        setSpinning(false);
+        beep(880, 0.12, 'triangle');
+        setTimeout(() => beep(1320, 0.3, 'triangle'), 120);
+        vibrate(80);
+        return;
+      }
+      setCur(pool[Math.floor(Math.random() * pool.length)]);
+      beep(300 + Math.random() * 500, 0.03, 'square', 0.05);
+      t.current = setTimeout(tick, d);
+    };
+    tick();
+  };
+
+  return html`
+    <div class="chips">
+      ${CAT_OPTIONS.map(c => html`
+        <button class=${'chip' + (cat === c.id ? ' on' : '')} onClick=${() => setCat(c.id)}>${c.emoji} ${c.name}</button>`)}
+    </div>
+    <div class=${'slot' + (spinning ? ' spinning' : '')}>
+      ${cur ? html`
+        <div class="slot-cat">${cur.cat.emoji} ${cur.cat.name}</div>
+        <div class="slot-text">${hidden ? '🙈 가려진 장면' : `“${cur.text}”`}</div>
+      ` : html`<div class="slot-empty"><b>🎰</b>룰렛을 돌려 장면을 뽑아요</div>`}
+    </div>
+    <div class="spacer"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" disabled=${!cur || spinning} onClick=${() => setHidden(!hidden)}>${hidden ? '👀 보이기' : '🙈 가리기'}</button>
+      <button class="btn btn-pink" disabled=${spinning} onClick=${spin}>${spinning ? '돌리는 중…' : '🎰 돌리기'}</button>
+    </div>`;
+}
+
+function RelayTool() {
+  const [n, setN] = useState(5);
+  const [sec, setSec] = useState(5);
+  const [runKey, setRunKey] = useState(0);
+  const [running, setRunning] = useState(false);
+  const order = range(n);
+
+  if (running) return html`
+    <${RelayRunner} key=${runKey} order=${order} seconds=${sec} onStop=${() => setRunning(false)} renderDone=${() => html`
+      <div class="done-box">
+        <div class="big-emoji">✅</div>
+        <h3>릴레이 완료!</h3>
+      </div>
+      <button class="btn btn-cyan" onClick=${() => setRunKey(runKey + 1)}>🔁 다시 시작</button>
+      <button class="btn btn-ghost" onClick=${() => setRunning(false)}>⚙️ 설정으로</button>`}/>`;
+
+  return html`
+    <div class="card">
+      <${Stepper} label="👥 인원" value=${n} min=${2} max=${10} suffix="명" onChange=${setN}/>
+      <div class="label mt">⏱ 1인당 시간</div>
+      <${Seg} options=${[3, 4, 5]} value=${sec} fmt=${v => v + '초'} onChange=${setSec}/>
+    </div>
+    <div class="card center">
+      <p class="muted" style=${{ lineHeight: 1.6 }}>1번부터 ${n}번까지 순서대로 ${sec}초씩!<br/>차례가 바뀔 때마다 신호음과 화면 번쩍임으로 알려줘요.</p>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn btn-cyan" onClick=${() => { keepAwake(); setRunKey(runKey + 1); setRunning(true); }}>▶ 릴레이 시작</button>`;
+}
+
+function DiscussTool() {
+  const [sec, setSec] = useState(30);
+  return html`
+    <${Seg} options=${[30, 45, 60, 90]} value=${sec} fmt=${v => v + '초'} onChange=${setSec}/>
+    <${DiscussTimer} key=${sec} seconds=${sec}/>`;
+}
+
+function Tools({ onBack }) {
+  const [tab, setTab] = useState('roulette');
+  const tabs = [['roulette', '🎰 룰렛'], ['relay', '⏱ 릴레이'], ['discuss', '🤫 토론']];
+  return html`
+    <${TopBar} title="키워드 룰렛 / 타이머" onBack=${onBack}/>
+    <div class="tabs">
+      ${tabs.map(([id, label]) => html`<button class=${tab === id ? 'on' : ''} onClick=${() => setTab(id)}>${label}</button>`)}
+    </div>
+    <div class="tab-body" key=${tab}>
+      ${tab === 'roulette' ? html`<${Roulette}/>` : tab === 'relay' ? html`<${RelayTool}/>` : html`<${DiscussTool}/>`}
+    </div>`;
+}
+
+/* ---------- 앱 ---------- */
+function App() {
+  const [settings, setSettings] = useState(loadSettings);
+  const [phase, setPhase] = useState('home');
+  const [game, setGame] = useState(null);
+  const phaseRef = useRef(phase);
+  phaseRef.current = phase;
+  const guarded = useRef(false);
+
+  useEffect(() => { saveSettings(settings); SOUND.on = settings.sound; }, [settings]);
+  useEffect(() => { window.scrollTo(0, 0); }, [phase]);
+
+  // 휴대폰 '뒤로 가기'를 실수로 눌러 게임이 날아가지 않게 막기
+  useEffect(() => {
+    if (phase !== 'home' && !guarded.current) {
+      try { history.pushState({ nvm: 1 }, ''); guarded.current = true; } catch (e) {}
+    }
+  }, [phase]);
+  useEffect(() => {
+    const onPop = () => {
+      guarded.current = false;
+      if (phaseRef.current === 'home') return;
+      if (confirm('처음 화면으로 돌아갈까요?\n진행 중인 게임은 사라져요.')) setPhase('home');
+      else { try { history.pushState({ nvm: 1 }, ''); guarded.current = true; } catch (e) {} }
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+  }, []);
+
+  const exit = () => { if (confirm('게임을 그만두고 처음 화면으로 갈까요?')) setPhase('home'); };
+  const deal = () => { audio(); keepAwake(); setGame(newGame(settings)); setPhase('reveal'); };
+
+  let body;
+  switch (phase) {
+    case 'home':
+      body = html`<${Home} settings=${settings} setSettings=${setSettings}
+        onPlay=${() => setPhase('setup')} onShare=${() => setPhase('share')} onTools=${() => { audio(); keepAwake(); setPhase('tools'); }}/>`;
+      break;
+    case 'setup':
+      body = html`<${Setup} settings=${settings} setSettings=${setSettings} onBack=${() => setPhase('home')} onStart=${deal}/>`;
+      break;
+    case 'reveal':
+      body = html`<${Reveal} game=${game} onDone=${() => setPhase('ready')} onExit=${exit}/>`;
+      break;
+    case 'ready':
+      body = html`<${Ready} game=${game} onStart=${() => { keepAwake(); setPhase('relay'); }} onExit=${exit}/>`;
+      break;
+    case 'relay':
+      body = html`<${RelayPhase} key=${'r' + game.round} game=${game} onDiscuss=${() => setPhase('discuss')} onExit=${exit}/>`;
+      break;
+    case 'discuss':
+      body = html`<${DiscussPhase} game=${game} onExit=${exit} onVote=${() => setPhase('vote')}
+        onRelay=${() => { setGame({ ...game, round: game.round + 1 }); setPhase('relay'); }}/>`;
+      break;
+    case 'vote':
+      body = html`<${Vote} game=${game} onBack=${() => setPhase('discuss')}
+        onPick=${p => { setGame({ ...game, voted: p }); setPhase('result'); }}/>`;
+      break;
+    case 'result':
+      body = html`<${Result} game=${game} onAgain=${deal} onSetup=${() => setPhase('setup')} onHome=${() => setPhase('home')}/>`;
+      break;
+    case 'share':
+      body = html`<${Share} onBack=${() => setPhase('home')}/>`;
+      break;
+    case 'tools':
+      body = html`<${Tools} onBack=${() => setPhase('home')}/>`;
+      break;
+  }
+  return html`<div class="app"><div class="screen" key=${phase + (game ? game.kw.text : '')}>${body}</div></div>`;
+}
+
+render(html`<${App}/>`, document.getElementById('root'));
+</script>
+</body>
+</html>
